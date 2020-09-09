@@ -7,7 +7,6 @@ library(dplyr)        # para pocessar dados
 library(ggplot2)      # para plotar os dados
 library(geobr)        # Para acessar os dados do IBGE
 library(lubridate)   # Para manipulação de datas
-library(viridis)      #para usar a paleta de cores Magma
 
 #dados do covid:
 #https://covid.saude.gov.br/
@@ -36,7 +35,7 @@ covid.dados$categoria <- cut(covid.dados$casosAcumulado,breaks=meus.breaks,
                              labels = meus.labels)
 
 #definindo paleta de cores
-minha.paleta <- colorRampPalette(c('#ffffff', rev(magma(9))))
+minha.paleta <- colorRampPalette(c('#ffffff', "#f5ce67", "#d1171d", "#000000"));
 
 #organizando as datas
 datas <- covid.dados$data %>% unique() 
@@ -53,26 +52,23 @@ for(i in seq(1, length(datas))){
   juntos <- full_join(estados, covid.atual, by="abbrev_state")
   
   #Criando arquivo de imagem 
-  caminho<-paste("./mapas/casos-dia-",i, sep="")
-  caminho<-paste(caminho,".png", sep="")
-  png(caminho, width = 600, height = 600)
+  #caminho<-paste("./mapas/casos-dia-",i, sep="")
+  #caminho<-paste(caminho,".png", sep="")
+  #png(caminho, width = 600, height = 600)
   
   #Plotando os dados 
   plot <- ggplot(juntos)+
     geom_sf(aes(fill=categoria))+
-    scale_fill_manual(values = rev(minha.paleta(12))[-(10:11)],   #Customizando a paleta de cores
+    scale_fill_manual(values = rev(minha.paleta(10)),   #Customizando a paleta de cores
                       limits = rev(meus.labels))+
-    theme_bw()+
     labs(fill="Casos\nAcumulados", #Definindo Títulos e Legendas
-         x=NULL,
-         y=NULL,
          title = paste0("Total de casos em ",
                         day(data.atual),"/",
                         month(data.atual),"/",
                         year(data.atual)))+
     theme(panel.grid = element_blank(), # Removendo as grades
           panel.border = element_blank(), # Removendo a borda
-          panel.background = element_rect(fill = '#FFFFFF'), # Definindo cor de fundo do painel 
+          panel.background = element_rect(fill = '#ffffff'), # Definindo cor de fundo do painel 
           plot.title = element_text(size = 20, face="bold"), #formatação do título
           plot.margin =  margin(t=.4, 0, b=.4, 0, "cm"),     # Definindo as Margens
           axis.text = element_blank(), #Removendo o texto dos eixos
@@ -82,16 +78,16 @@ for(i in seq(1, length(datas))){
           legend.text = element_text(size = 12), #Definindo o tamanho do texto da legenda
           legend.title = element_text(size = 13), #Definindo o tamanho do título da legenda
           legend.background = element_blank(), #Definindo a cor do fundo da legenda
-          plot.background = element_rect(fill = '#FFFFFF')) #Definindo a cor do fundo do gráfico
+          plot.background = element_rect(fill = '#ffffff')) #Definindo a cor do fundo do gráfico
   print(plot)
   
   # Limpando plot
-  dev.off()
+  #dev.off()
 }
 
 #crf - qualidade do vídeo, 0 é a melhor qualidade, 51 a pior
 #-y sobrescrever vídeos já salvos sem perguntar
-rstudioapi::terminalExecute("ffmpeg -framerate 5 -i ./mapas/casos-dia-%000d.png -crf 1 -y ./casos.avi")
+#rstudioapi::terminalExecute("ffmpeg -framerate 5 -i ./mapas/casos-dia-%000d.png -crf 1 -y ./casos.avi")
 
 #usando o pacote animation
 library(animation)   
@@ -99,4 +95,5 @@ saveGIF(ani.height=600,ani.width=600, #Salvando a animação como GIF
         ani.res=120,interval=.10,{
           
           #for 
+          
         })
