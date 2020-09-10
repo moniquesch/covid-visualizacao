@@ -42,7 +42,7 @@ datas <- covid.dados$data %>% unique()
 inicio <- sort(datas)[1]
 datas.org <- inicio + days(0:(length(datas)-1))
 
-#gerando as imagens dos mapas
+#gerando e salvando as imagens dos mapas
 for(i in seq(1, length(datas))){
   print(i)
     
@@ -52,9 +52,8 @@ for(i in seq(1, length(datas))){
   juntos <- full_join(estados, covid.atual, by="abbrev_state")
   
   #Criando arquivo de imagem 
-  #caminho<-paste("./mapas/casos-dia-",i, sep="")
-  #caminho<-paste(caminho,".png", sep="")
-  #png(caminho, width = 600, height = 600)
+  caminho<-paste0("./mapas/casos-dia-",i,".png")
+  png(caminho, width = 600, height = 600)
   
   #Plotando os dados 
   plot <- ggplot(juntos)+
@@ -82,18 +81,53 @@ for(i in seq(1, length(datas))){
   print(plot)
   
   # Limpando plot
-  #dev.off()
+  dev.off()
 }
 
 #crf - qualidade do vídeo, 0 é a melhor qualidade, 51 a pior
 #-y sobrescrever vídeos já salvos sem perguntar
-#rstudioapi::terminalExecute("ffmpeg -framerate 5 -i ./mapas/casos-dia-%000d.png -crf 1 -y ./casos.avi")
+rstudioapi::terminalExecute("ffmpeg -framerate 5 -i ./mapas/casos-dia-%000d.png -crf 1 -y ./casos.avi")
 
-#usando o pacote animation
+#Criar gif usando o pacote Animation
 library(animation)   
 saveGIF(ani.height=600,ani.width=600, #Salvando a animação como GIF
         ani.res=120,interval=.10,{
           
-          #for 
-          
+          for(i in seq(1, length(datas))){
+            print(i)
+            
+            #gerando os mapas
+            data.atual=datas.org[i]
+            covid.atual <- filter(covid.dados, data==data.atual)
+            juntos <- full_join(estados, covid.atual, by="abbrev_state")
+            
+            #Criando arquivo de imagem 
+            caminho<-paste0("./mapas/casos-dia-",i,".png")
+            png(caminho, width = 600, height = 600)
+            
+            #Plotando os dados 
+            plot <- ggplot(juntos)+
+              geom_sf(aes(fill=categoria))+
+              scale_fill_manual(values = rev(minha.paleta(10)),   #Customizando a paleta de cores
+                                limits = rev(meus.labels))+
+              labs(fill="Casos\nAcumulados", #Definindo Títulos e Legendas
+                   title = paste0("Total de casos em ",
+                                  day(data.atual),"/",
+                                  month(data.atual),"/",
+                                  year(data.atual)))+
+              theme(panel.grid = element_blank(), # Removendo as grades
+                    panel.border = element_blank(), # Removendo a borda
+                    panel.background = element_rect(fill = '#ffffff'), # Definindo cor de fundo do painel 
+                    plot.title = element_text(size = 20, face="bold"), #formatação do título
+                    plot.margin =  margin(t=.4, 0, b=.4, 0, "cm"),     # Definindo as Margens
+                    axis.text = element_blank(), #Removendo o texto dos eixos
+                    axis.ticks = element_blank(),#Removendo os Eixos
+                    legend.position = c(.15,.23),#Definindo a posição da legenda
+                    legend.key.size = unit(.6,'line'),#Definindo o tamanho da legenda
+                    legend.text = element_text(size = 12), #Definindo o tamanho do texto da legenda
+                    legend.title = element_text(size = 13), #Definindo o tamanho do título da legenda
+                    legend.background = element_blank(), #Definindo a cor do fundo da legenda
+                    plot.background = element_rect(fill = '#ffffff')) #Definindo a cor do fundo do gráfico
+            print(plot)
+          }
         })
