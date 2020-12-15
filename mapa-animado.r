@@ -19,14 +19,24 @@ estados  <- read_state(code_state = "all")
 #municipio <- read_municipality(code_muni = "PR") %>% 
 #  mutate(codmun=substr(as.character(code_muni),1,6))
 
-#carregando os dados
+#definindo a estrutura dos dados. O ministério da saúde muda a estrutura da tabela com frequência, é bom sempre conferir
 estrut.dados <- c(rep('text',7),'date',rep('text',9))
+
+#carregando os dados (se tiver em .xlsx)
 covid.dados <- read_excel("HIST_PAINEL_COVIDBR_12jul2020.xlsx", 
                           sheet = 1,col_types = estrut.dados) %>% #Leitura do arquivo
   dplyr::mutate(casosAcumulado=as.numeric(casosAcumulado), # Convertendo as classes dos dados
                 data=as.Date(data)) %>%  
   dplyr::select(data,estado,casosAcumulado) %>% # Selecionando colunas de dados
   as.data.frame() %>% rename(abbrev_state=estado) #renomeia coluna dos estados pra ficar igual aos dados do IBGE
+
+#carregando os dados (se tiver em .csv)
+covid.dados <- read_delim("HIST_PAINEL_COVIDBR_03out2020.csv", ";", escape_double = FALSE, col_types = cols(data = col_date(format = "%d/%m/%Y"),  estado = col_character()), trim_ws = TRUE) %>% 
+  dplyr::mutate(casosAcumulado=as.numeric(casosAcumulado), # Convertendo as classes dos dados
+                data=as.Date(data)) %>%  
+  dplyr::select(data,estado,casosAcumulado) %>% # Selecionando colunas de dados
+  as.data.frame() %>% rename(abbrev_state=estado)
+
 
 #definindo categorias dos dados
 meus.breaks <- c(-Inf,0,100,500,1000,5000,10000,50000,100000, 200000,+Inf)
